@@ -1,11 +1,11 @@
-<h1>Roblox API Checker 1.0</h1>
+<h1>Roblox API Checker</h1>
 
 <form id="apiForm">
   <label for="username">Username:</label>
-  <input type="text" id="username" name="username"><br><br>
+  <input type="text" id="username"><br><br>
 
   <label for="userid">User ID:</label>
-  <input type="text" id="userid" name="userid"><br><br>
+  <input type="text" id="userid"><br><br>
 
   <input type="submit" value="Submit">
 </form>
@@ -19,37 +19,39 @@ const output = document.getElementById('dataOutput');
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
 
-  const username = document.getElementById('username').value.trim();
+  let username = document.getElementById('username').value.trim();
   let userid = document.getElementById('userid').value.trim();
 
   try {
     if (!username && !userid) {
-      output.textContent = 'Enter username or user ID';
+      output.textContent = "Enter username or user ID";
       return;
     }
 
-    // 🔁 Username → ID
+    // 🔁 STEP 1: Username → ID (if needed)
     if (username && !userid) {
-      const res = await fetch('https://users.roblox.com/v1/usernames/users', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("https://api.allorigins.win/raw?url=" +
+        encodeURIComponent("https://users.roblox.com/v1/usernames/users"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ usernames: [username] })
       });
 
       const data = await res.json();
 
-      if (!data.data || data.data.length === 0) {
-        throw new Error('User not found');
+      if (!data.data || !data.data.length) {
+        throw new Error("User not found");
       }
 
       userid = data.data[0].id;
     }
 
-    // 🔁 Fetch raw user data
-    const userRes = await fetch(`https://users.roblox.com/v1/users/${userid}`);
+    // 🔁 STEP 2: Get user data
+    const userRes = await fetch("https://api.allorigins.win/raw?url=" +
+      encodeURIComponent(`https://users.roblox.com/v1/users/${userid}`));
 
     if (!userRes.ok) {
-      throw new Error('Failed to fetch user data');
+      throw new Error("Failed to fetch user data");
     }
 
     const userData = await userRes.json();
@@ -57,8 +59,8 @@ form.addEventListener('submit', async (e) => {
     // 🆕 Show RAW JSON
     output.textContent = JSON.stringify(userData, null, 2);
 
-  } catch (error) {
-    output.textContent = 'Error: ' + error.message;
+  } catch (err) {
+    output.textContent = "Error: " + err.message;
   }
 });
 </script>
